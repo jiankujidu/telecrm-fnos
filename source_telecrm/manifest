@@ -1,0 +1,11 @@
+appname               = telecrm
+version               = 1.0.0
+display_name          = 电销CRM
+desc                  = 电销CRM：客户管理、通话记录、录音回听、团队报表，后台与移动端一体
+platform              = x86
+source                = thirdparty
+maintainer            = jiankujidu
+distributor           = jiankujidu
+service_port          = 18080
+desktop_uidir         = ui
+desktop_applaunchname = telecrm.Application
