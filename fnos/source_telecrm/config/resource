@@ -1,0 +1,20 @@
+{
+  "docker-project": {
+    "projects": [
+      {
+        "name": "telecrm",
+        "path": "docker"
+      }
+    ]
+  },
+  "data-share": {
+    "shares": [
+      {
+        "name": "telecrm"
+      },
+      {
+        "name": "telecrm/data"
+      }
+    ]
+  }
+}
