@@ -1,0 +1,1 @@
+import{r as e}from"./request-C8gvoKzU.js";const s={list:a=>e.get("/package/list",{params:{status:a}}),add:a=>e.post("/package",a),update:(a,p)=>e.put(`/package/${a}`,p),remove:a=>e.delete(`/package/${a}`)};export{s as p};
