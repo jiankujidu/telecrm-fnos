@@ -1,0 +1,23 @@
+# 沙盒 / 本机「一键演示」配置
+# 说明：主配置 application.yml 面向 docker-compose（mysql/redis/rabbitmq 为服务名），
+#       本 profile 改为直连本机数据库，并排除未使用的 Redis / RabbitMQ 自动配置，
+#       使后端无需 docker 即可独立启动。
+# 启动方式：
+#   mvn spring-boot:run -Dspring-boot.run.profiles=local
+# 或
+#   java -jar target/xxx.jar --spring.profiles.active=local
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/tele_crm?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: telecrm
+    password: telecrm123
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+
+telecrm:
+  storage:
+    path: ./uploads
+    base-url: /files
