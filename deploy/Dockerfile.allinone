@@ -1,0 +1,60 @@
+# 电销CRM —— 一体化镜像（PHP 后端 + 管理后台打包进同一个容器，只占一个端口）
+#
+# 构建（上下文必须是仓库根目录）：
+#   docker build -f deploy/Dockerfile.allinone -t jiankujidu/telecrm-allinone:1.0.0 .
+#
+# 运行：
+#   docker run -d -p 8080:80 -e DB_HOST=mysql ... jiankujidu/telecrm-allinone:1.0.0
+#
+# 访问：
+#   管理后台 http://localhost:8080/
+#   后端接口 http://localhost:8080/api
+
+# ---------------------------------------------------------------- 阶段1：打包管理后台
+FROM node:20-alpine AS adminbuild
+WORKDIR /app
+RUN npm config set registry https://registry.npmmirror.com
+COPY admin/package*.json ./
+RUN npm install
+COPY admin/ .
+RUN npm run build
+
+# ---------------------------------------------------------------- 阶段2：PHP + Apache 一体化
+FROM php:8.1-apache
+ENV TZ=Asia/Shanghai
+
+# pdo_mysql 必需；zip 用于解析 XLSX 导入
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends libzip-dev unzip; \
+    docker-php-ext-install pdo_mysql zip; \
+    apt-get clean; \
+    rm -rf /var/lib/apt/lists/*
+
+RUN a2enmod rewrite
+
+# 关键：让「/」优先命中后台的 index.html，而不是 PHP 后端的 index.php。
+# 否则打开 http://localhost:8080/ 看到的是接口 JSON 而不是管理后台页面。
+RUN { echo 'DirectoryIndex index.html index.php'; } \
+    > /etc/apache2/conf-available/telecrm-directoryindex.conf \
+    && a2enconf telecrm-directoryindex
+
+WORKDIR /var/www/html
+
+# PHP 后端代码（排除初始化 SQL，避免随镜像分发）
+COPY server-php/index.php server-php/lib.php server-php/config.php /var/www/html/
+COPY server-php/api /var/www/html/api
+
+# 管理后台构建产物（index.html + assets/）
+COPY --from=adminbuild /app/dist/ /var/www/html/
+
+# 一体化路由规则：
+#   真实文件/目录        -> 直接返回（后台静态资源、uploads 录音）
+#   /api/*               -> 交给 index.php（PHP 接口）
+#   其它（SPA 深链接）    -> 返回 index.html（后台前端路由）
+COPY deploy/apache/allinone.htaccess /var/www/html/.htaccess
+
+RUN mkdir -p /var/www/html/uploads && \
+    chown -R www-data:www-data /var/www/html/uploads
+
+EXPOSE 80
