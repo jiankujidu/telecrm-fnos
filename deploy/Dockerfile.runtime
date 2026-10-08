@@ -1,0 +1,16 @@
+# 电销CRM —— 多架构运行镜像（jar 跨平台，只需 COPY，无需在目标架构上编译）
+#
+# 用法（把已编译好的 app.jar 放到本文件同目录，构建上下文 = deploy/）：
+#   docker buildx build --platform linux/arm64 -f deploy/Dockerfile.runtime \
+#       -t jiankujidu/telecrm:1.0.0-arm64 --load .
+#
+#   docker buildx build --platform linux/amd64 -f deploy/Dockerfile.runtime \
+#       -t jiankujidu/telecrm:1.0.0 --load .
+
+FROM eclipse-temurin:17-jre
+ENV TZ=Asia/Shanghai
+WORKDIR /app
+COPY app.jar /app/app.jar
+# 不写 RUN：跨平台构建时无需 QEMU；uploads 目录由 compose 的卷挂载自动创建
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
