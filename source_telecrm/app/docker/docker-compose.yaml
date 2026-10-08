@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+  telecrm-mysql:
+    image: mysql:8.0
+    container_name: telecrm-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: tele_crm
+      MYSQL_USER: telecrm
+      MYSQL_PASSWORD: telecrm123
+      TZ: Asia/Shanghai
+    volumes:
+      - ${TRIM_PKGVAR:-/var/apps/telecrm/shares/telecrm}/mysql:/var/lib/mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot123"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 40s
+    restart: unless-stopped
+
+  telecrm-web:
+    image: jiankujidu/telecrm:1.0.0
+    container_name: telecrm-web
+    depends_on:
+      telecrm-mysql:
+        condition: service_healthy
+    ports:
+      - "18080:8080"
+    environment:
+      TZ: Asia/Shanghai
+      SPRING_DATASOURCE_URL: jdbc:mysql://telecrm-mysql:3306/tele_crm?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: telecrm
+      SPRING_DATASOURCE_PASSWORD: telecrm123
+      TELECRM_STORAGE_PATH: /app/uploads
+    volumes:
+      - ${TRIM_PKGVAR:-/var/apps/telecrm/shares/telecrm}/uploads:/app/uploads
+    restart: unless-stopped
