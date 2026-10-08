@@ -1,13 +1,14 @@
-# 电销CRM —— 飞牛 OS（FnOS）一键部署
-# 【只有一个业务镜像】jiankujidu/telecrm:1.0.1 = 后端接口 + 管理后台合一
+# 电销CRM —— 一键部署（飞牛 OS / 任意 Docker 主机通用）
+# 【只有一个业务镜像】jiankujidu/telecrm:1.1.0 = 后端接口 + 管理后台合一
 #
 # 部署：飞牛桌面 → Docker → Compose → 新增项目
 #       项目名称 telecrm，路径如 /vol1/1000/docker/telecrm，粘贴本文件 → 确定
 #
-# 访问： http://飞牛IP:18080/
+# 访问： http://服务器IP:18080/
 # 登录： 13800000001 / 123456
 #
 # 说明：首次启动会自动建表并灌入演示数据（脚本幂等，重启安全），无需手工导入 SQL。
+# v1.1.0 新增：客户画像表、客户增删改、数据备份导出与导入恢复、手机端拨号修复、App 强制登录。
 
 services:
   mysql:
@@ -35,7 +36,7 @@ services:
     restart: unless-stopped
 
   web:
-    image: jiankujidu/telecrm:1.0.1
+    image: jiankujidu/telecrm:1.1.0
     container_name: telecrm-web
     depends_on:
       mysql:
