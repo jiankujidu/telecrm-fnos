@@ -1,0 +1,44 @@
+name: tele_sales_crm
+description: 电销CRM移动端 - 复刻电销帮
+publish_to: 'none'
+version: 1.1.0+2
+
+environment:
+  sdk: ^3.4.0
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  # 状态管理
+  flutter_riverpod: ^2.5.1
+  # 路由
+  go_router: ^14.2.0
+  # 网络
+  dio: ^5.4.3+1
+  # 本地存储
+  shared_preferences: ^2.2.3
+  sqflite: ^2.3.3
+  path_provider: ^2.1.3
+  # 文件选择/解析
+  file_picker: ^8.0.0
+  excel: ^4.0.6
+  csv: ^5.1.1
+  # 拨号 / 权限
+  url_launcher: ^6.3.0
+  permission_handler: ^11.3.1
+  # 定位（附近企业）
+  geolocator: ^12.0.0
+  # Toast
+  fluttertoast: ^8.2.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
