@@ -1,0 +1,66 @@
+server:
+  port: 8080
+  # 一体化部署：接口走 /api/*，管理后台静态资源走根路径，因此 context-path 必须是 /
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: tele-sales-crm-server
+  # 一体化/NAS 部署：启动即自动建表并灌入演示数据，无需手工导入 SQL。
+  # 两个脚本全部幂等（CREATE TABLE IF NOT EXISTS + ON DUPLICATE KEY UPDATE），重启不会重复造数据。
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/schema.sql
+      data-locations: classpath:db/data.sql
+      continue-on-error: true
+      separator: ;
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://mysql:3306/tele_crm?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false
+    username: telecrm
+    password: telecrm123
+  data:
+    redis:
+      host: redis
+      port: 6379
+      database: 0
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: guest
+    password: guest
+  servlet:
+    multipart:
+      # 备份恢复 / 客户批量导入的 JSON、Excel 可能较大
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+jwt:
+  secret: telecrm-default-secret-key-please-change-in-prod-1234567890
+  expiration: 86400000
+
+telecrm:
+  storage:
+    # 录音/文件存储目录（生产可挂载 OSS/MinIO，此处用本地磁盘）
+    path: ./uploads
+    # 对外访问基础路径（完整访问地址 = /api/files/<filename>）
+    base-url: /api/files
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: assign_id
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
