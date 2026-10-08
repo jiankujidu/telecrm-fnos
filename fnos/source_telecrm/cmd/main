@@ -1,0 +1,49 @@
+#!/bin/bash
+# 电销CRM 生命周期脚本（Docker Compose 模式）
+# 应用中心调用：main start | main stop | main status
+FILE_PATH="${TRIM_APPDEST}/docker/docker-compose.yaml"
+
+is_docker_running () {
+    DOCKER_NAMES=""
+    if [ -f "$FILE_PATH" ]; then
+        DOCKER_NAMES=$(grep "container_name" "$FILE_PATH" | awk -F ':' '{print $2}' | xargs)
+    fi
+    [ -z "$DOCKER_NAMES" ] && return 1
+    local total=0 ok=0 c
+    for c in $DOCKER_NAMES; do
+        total=$((total + 1))
+        if [ "$(docker inspect -f '{{.State.Running}}' "$c" 2>/dev/null)" = "true" ]; then
+            ok=$((ok + 1))
+        fi
+    done
+    [ "$total" -gt 0 ] && [ "$ok" -eq "$total" ]
+}
+
+case $1 in
+start)
+    # docker application will be started by appcenter
+    exit 0
+    ;;
+stop)
+    exit 0
+    ;;
+status)
+    if is_docker_running; then
+        exit 0
+    else
+        exit 3
+    fi
+    ;;
+log)
+    LINES="${2:-200}"
+    for c in $(grep "container_name" "$FILE_PATH" | awk -F ':' '{print $2}' | xargs); do
+        echo "=== [$c] ==="
+        docker logs --tail "$LINES" "$c" 2>&1
+        echo ""
+    done
+    exit 0
+    ;;
+*)
+    exit 1
+    ;;
+esac
