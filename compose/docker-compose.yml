@@ -1,0 +1,54 @@
+# 电销CRM —— 飞牛 OS（FnOS）一键部署
+# 【只有一个业务镜像】jiankujidu/telecrm:1.0.0 = 后端接口 + 管理后台合一
+#
+# 部署：飞牛桌面 → Docker → Compose → 新增项目
+#       项目名称 telecrm，路径如 /vol1/1000/docker/telecrm，粘贴本文件 → 确定
+#
+# 访问： http://飞牛IP:18080/
+# 登录： 13800000001 / 123456
+#
+# 说明：首次启动会自动建表并灌入演示数据（脚本幂等，重启安全），无需手工导入 SQL。
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: telecrm-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: tele_crm
+      MYSQL_USER: telecrm
+      MYSQL_PASSWORD: telecrm123
+      TZ: Asia/Shanghai
+    # 数据目录用相对路径 = 当前项目目录下，飞牛会自动创建
+    # 数据库端口默认不对外暴露；需要用 Navicat 连接时去掉下面两行注释
+    # ports:
+    #   - "13306:3306"
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot123"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    restart: unless-stopped
+
+  web:
+    image: jiankujidu/telecrm:1.0.0
+    container_name: telecrm-web
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      # 5 位端口，避开飞牛系统及其它常用服务
+      - "18080:8080"
+    environment:
+      TZ: Asia/Shanghai
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/tele_crm?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: telecrm
+      SPRING_DATASOURCE_PASSWORD: telecrm123
+      TELECRM_STORAGE_PATH: /app/uploads
+    volumes:
+      - ./uploads:/app/uploads
+    restart: unless-stopped
