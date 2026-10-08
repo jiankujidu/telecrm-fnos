@@ -1,20 +1,24 @@
-# 电销CRM —— 飞牛OS（fnOS）应用中心安装包
+# 电销CRM —— 飞牛OS（fnOS）应用 + 全套源码
 
-飞牛 OS 应用中心的 `.fpk` 安装包，装完就是飞牛桌面上的一个正式应用：有图标、能启停、能卸载，
-数据由飞牛统一托管。
+飞牛 OS 应用中心的 `.fpk` 安装包 + 完整源码（Java 后端 / Vue3 管理后台 / Flutter 手机 App）。
+装完就是飞牛桌面上的一个正式应用：有图标、能启停、能卸载，数据由飞牛统一托管。
 
-- 应用名：**电销CRM**（`telecrm`）　当前版本：**1.0.1**
-- 镜像：`jiankujidu/telecrm:1.0.1`（Java 后端 + 管理后台合一，单镜像；ARM 机型用 `1.0.1-arm64`）
+- 应用名：**电销CRM**（`telecrm`）　当前版本：**1.1.0**
+- 镜像：`jiankujidu/telecrm:1.1.0`（Java 后端 + 管理后台合一，单镜像；ARM 机型用 `1.1.0-arm64`）
 - 端口：**18080**　后台账号：`13800000001` / `123456`
 - 打包工具：飞牛官方 `fnpack 1.2.3`（手写包结构会被应用中心拒绝，必须用官方工具）
 
-## v1.0.1 更新内容
+---
 
-1. **移动端登录页支持填写服务器地址**，并带「测试连接」，解决真机读不出数据的问题
-   （旧版默认地址 `10.0.2.2` 只有安卓模拟器能用，真机不可达）。
-2. **新增数据导出**：后台「客户」「通话记录」页各加了「导出 Excel」按钮，
-   后端新增 `/api/export/customers`、`/api/export/call-records`（Apache POI 生成 .xlsx）。
-3. **离线态提示**：未连接服务器时首页顶部有醒目提示条，点击直达设置。
+## v1.1.0 更新内容
+
+| 问题 | 原因 | 处理 |
+|---|---|---|
+| **画像表不能编辑、不能删** | 后端 `CustomerController` 只有列表/转让接口，**根本没有增删改** | 新增 `customer_profile` 画像表 + 完整增删改接口；后台与 App 都能编辑、删除、批量删除 |
+| **电话打不了** | ①Dart 的 `NavigatorService.context` 是 `late` 变量**从未赋值**，点拨号就抛异常；②Manifest 声明 `CALL_PHONE` 却**从未动态申请权限** | 重写拨号服务：先申请权限 → 有权限直拨 / 无权限自动降级唤起拨号界面，保证点了一定有反应；失败有明确提示与「去授权」入口 |
+| **只有导入没导出** | 后端缺导出接口 | 客户 / 话单导出 Excel；**客户导出含 30 列画像字段** |
+| **APK 免登录** | 之前按要求做的免登录 | **改回强制登录**：必须先填服务器地址 + 账号密码，去掉「先离线看看」 |
+| **怕数据丢失** | 没有全量备份 | 新增**数据备份与恢复**：一键导出全库 JSON（15 张表），换机器/重装后上传即恢复，支持覆盖/追加 |
 
 ---
 
@@ -22,9 +26,11 @@
 
 | 你的飞牛机型 | 文件 |
 |---|---|
-| 不确定 / 前两个都提示不符 | **[`fpk/telecrm_1.0.1_all.fpk`](fpk/telecrm_1.0.1_all.fpk)**（platform=all，跳过架构校验） |
-| 常见 x86 主机 / x86 NAS | **[`fpk/telecrm_1.0.1_x86.fpk`](fpk/telecrm_1.0.1_x86.fpk)** |
-| ARM 机型（ARM 盒子、瑞芯微/晶晨） | **[`fpk/telecrm_1.0.1_arm.fpk`](fpk/telecrm_1.0.1_arm.fpk)**（arm64 镜像） |
+| 不确定 / 前两个都提示不符 | **[`fpk/telecrm_1.1.0_all.fpk`](fpk/telecrm_1.1.0_all.fpk)**（platform=all，跳过架构校验） |
+| 常见 x86 主机 / x86 NAS | **[`fpk/telecrm_1.1.0_x86.fpk`](fpk/telecrm_1.1.0_x86.fpk)** |
+| ARM 机型（ARM 盒子、瑞芯微/晶晨） | **[`fpk/telecrm_1.1.0_arm.fpk`](fpk/telecrm_1.1.0_arm.fpk)**（arm64 镜像） |
+
+手机 App：**[`apk/TeleCRM-v1.1.0.apk`](apk/TeleCRM-v1.1.0.apk)**（需登录版，23.5 MB）
 
 查机型：飞牛桌面 → 系统设置 → 关于/设备信息看处理器；或 SSH 执行 `uname -m`，
 `x86_64` 选 x86 包，`aarch64` 选 arm 包。
@@ -39,22 +45,51 @@
 
 桌面会出现「电销CRM」图标，点击直开后台；也可以直接访问 `http://飞牛IP:18080/`。
 
-## 三、手机端
+## 三、手机端（需登录）
 
-免登录版 APK 装好后，**登录页填写服务器地址**：
+装好 APK 后打开，登录页第一项填**服务器地址**：
 
 ```
 http://飞牛IP:18080/api
 ```
 
 结尾必须是 `/api`，端口用实际部署端口（飞牛默认 18080），手机与飞牛需在同一局域网。
-填完可点右侧信号图标「测试连接」，显示「连接成功」再登录。
+填完点右侧信号图标「**测试连接**」→ 显示「连接成功」→ 再输入账号密码登录。
 
-## 四、数据导入与导出
+## 四、核心功能
 
-- **导入**：后台客户模块的文件导入（xls / xlsx / csv / txt）。
-- **导出**：客户页、通话记录页工具栏的「导出 Excel」，按当前筛选范围导出（我的 / 团队），
-  导出字段见 `docs/电销CRM-改进设计方案.md`。
+### 客户画像（新增）
+
+后台左侧菜单 **客户画像** = 独立的画像表：意向等级 / 行业 / 职位 / 微信 / 预算 / 决策人 /
+拨打次数 / 画像标签 / 画像小结，可按意向等级筛选，可编辑、删除、导出。
+
+完整字段：性别、年龄、生日、行业、职位、微信、邮箱、备用电话、省份、城市、意向等级 A–D、
+预算、是否决策人、来源渠道、感兴趣产品、客户痛点、在用竞品、下次跟进时间、画像标签、画像小结。
+
+> 第一次点「编辑画像」会自动生成一条空画像。
+
+### 拨号（已修复）
+
+- 客户列表每行右侧有绿色**电话图标**，点击直接拨号
+- 客户详情页顶部有 **「拨打电话」** 大按钮
+- 自动拨号任务、悬浮窗连拨、未接通重拨均走同一套拨号服务
+- 首次拨号会申请「电话」权限；拒绝也能用（会唤起系统拨号界面，手动点一下拨出）
+
+### 数据备份与恢复（新增）
+
+后台 → **数据备份**：
+
+1. **立即备份下载** → `telecrm-backup-日期.json`，含 15 张表全部数据
+2. 换机器/重装后选该文件 → **预览文件内容**（核对条数）→ **确认恢复**
+   - **覆盖**：清空现有数据后写入，与备份完全一致
+   - **追加**：只补进缺失记录，保留现有数据
+
+建议每周备份一次；批量导入、批量删除前先备份。
+
+### 导入 / 导出
+
+- **导入**：后台客户模块文件导入（xls / xlsx / csv / txt）
+- **导出**：客户页、通话记录页「导出 Excel」，按当前筛选条件导出
 
 ## 五、装不上怎么办
 
@@ -68,32 +103,70 @@ http://飞牛IP:18080/api
 飞牛桌面 → Docker → **Compose** → 新增项目，名称 `telecrm`，粘贴
 [`compose/docker-compose.yml`](compose/docker-compose.yml) 的内容 → 确定。
 
-访问同样是 `http://飞牛IP:18080/`。镜像和数据结构与 .fpk 完全相同，只是没有桌面图标。
-
-## 七、目录说明
+## 七、源码目录
 
 ```
-fpk/                     三个架构的安装包（直接用）
-compose/                 方案B 的 docker-compose.yml
-source_telecrm/          官方 fnpack 工程源码（改这里再重新打包）
-  ├── manifest           应用身份（appname/version/platform/service_port/checksum…）
-  ├── app/docker/        容器编排（mysql:8.0 + jiankujidu/telecrm）
-  ├── app/ui/            桌面入口配置与图标
-  ├── cmd/               生命周期脚本（main 及 install/upgrade/uninstall/config 钩子）
-  ├── config/            privilege（运行用户）+ resource（数据目录、docker 项目）
-  └── ICON.PNG / ICON_256.PNG
-docs/                    改进设计方案（问题诊断 + 迭代路线）
-tools/                   打包与图标脚本
+server/                  Java 后端（Spring Boot 3 + MyBatis-Plus + JWT）
+  ├── pom.xml
+  ├── Dockerfile
+  └── src/main/java/com/telecrm/
+        ├── controller/   14 个控制器（Customer / Backup / Export / CallRecord / Report …）
+        ├── entity/       16 个实体（含 CustomerProfile 客户画像）
+        ├── service/      业务逻辑（含客户增删改与画像读写）
+        └── resources/db/ schema.sql + data.sql（启动自动建表 + 演示数据）
+
+admin/                   Vue3 + Element Plus 管理后台
+  └── src/
+        ├── api/          customer.ts / backup.ts / export.ts …
+        ├── views/        customer / profile / backup / records / report / team …
+        └── router/
+
+app/                     Flutter 手机端（Android + iOS）
+  ├── lib/
+  │     ├── api/         customer_api.dart（含画像与增删改）
+  │     ├── pages/       customer/customer_edit_page.dart（画像编辑）、dialer …
+  │     ├── services/    dialer_service.dart（已修复拨号）
+  │     └── models/      customer_profile.dart
+  └── android/           原生拨号 MethodChannel（权限降级处理）
+
+deploy/                  一体化运行镜像 Dockerfile
+fnos/                    飞牛官方 fnpack 工程源码 + 打包脚本
+fpk/                     三个架构的安装包
+apk/                     手机 App
+docs/                    安装说明与改进设计方案
 ```
 
-## 八、自己重新打包
-
-需要 Linux / macOS，会自动下载官方 `fnpack`：
+## 八、本地开发
 
 ```bash
-cd tools
-./build.sh            # 生成 x86 / all / arm 三个包到 ../build/
+# 后端
+cd server && mvn spring-boot:run          # 需要本地 MySQL
+
+# 前端
+cd admin && pnpm install && pnpm dev      # http://localhost:5173
+
+# 手机端
+cd app && flutter pub get && flutter run
+
+# 一体化镜像（先打 jar，再构建镜像）
+cd server && mvn package -DskipTests && cp target/*.jar ../deploy/app.jar
+cd ../deploy && docker build -f Dockerfile.runtime -t jiankujidu/telecrm:1.1.0 .
+
+# 飞牛包（需要 fnpack）
+cd fnos && ./build-fpk.sh
 ```
 
-改端口：编辑 `source_telecrm/app/docker/docker-compose.yaml` 里的 `18080:8080`，
-以及 `source_telecrm/app/ui/config` 里的 `"port": "18080"`。
+## 九、API 一览（新增部分）
+
+| 方法 | 路径 | 说明 |
+|---|---|---|
+| POST | `/api/customer/create` | 新建客户（手机号团队内判重） |
+| POST | `/api/customer/update` | 编辑客户（null 字段不覆盖） |
+| POST | `/api/customer/delete` | 删除 / 批量删除（含画像） |
+| GET | `/api/customer/{id}/profile` | 读画像（无则自动建空画像） |
+| POST | `/api/customer/{id}/profile` | 保存画像 |
+| GET | `/api/customer/profile/list` | 画像表分页（可按意向等级筛选） |
+| POST | `/api/customer/{id}/touch-call` | 拨打累计 |
+| GET | `/api/backup/export` | 导出全库备份 JSON |
+| POST | `/api/backup/preview` | 预览备份文件内容 |
+| POST | `/api/backup/import?mode=` | 恢复（overwrite / append） |
