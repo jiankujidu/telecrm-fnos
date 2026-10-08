@@ -1,0 +1,4 @@
+build/
+tools/fnpack
+*.tar.gz
+.DS_Store
