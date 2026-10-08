@@ -22,7 +22,7 @@ services:
     restart: unless-stopped
 
   telecrm-web:
-    image: jiankujidu/telecrm:1.0.0
+    image: jiankujidu/telecrm:1.0.1
     container_name: telecrm-web
     depends_on:
       telecrm-mysql:
