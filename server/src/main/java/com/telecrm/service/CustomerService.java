@@ -18,6 +18,9 @@ public interface CustomerService extends IService<Customer> {
     IPage<Customer> pageList(String scope, Long teamId, Long userId,
                              String keyword, long current, long size);
 
+    /** 置顶 / 取消置顶（电脑端、手机端通用） */
+    void togglePin(Long id, boolean pin);
+
     /** 新建客户（手机号在本团队内判重） */
     Customer create(Customer customer);
 
