@@ -125,4 +125,9 @@ class CustomerApi {
     final r = await http.post('/customer/$id/touch-call');
     return CustomerProfile.fromJson(r.data['data'] as Map<String, dynamic>? ?? {});
   }
+
+  /// 置顶 / 取消置顶（与电脑端通用）
+  static Future<void> pin(int id, bool pin) async {
+    await http.post('/customer/$id/pin', data: {'pin': pin});
+  }
 }
