@@ -90,6 +90,45 @@ class _HomePageState extends ConsumerState<HomePage> {
           children: [
             // 未连接服务器时给出醒目提示（离线体验态）
             if (user.isGuest) const _OfflineBanner(),
+            // 云端自动外呼入口（电脑端建任务，手机端自动接单拨号）
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(14),
+                onTap: () => context.push('/auto-dial'),
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF21C17A), Color(0xFF1AA86A)],
+                    ),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.cloud_done_outlined, color: Colors.white, size: 28),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('云端自动外呼',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold)),
+                            SizedBox(height: 2),
+                            Text('电脑端下发任务，手机按顺序自动拨号',
+                                style: TextStyle(color: Colors.white70, fontSize: 12)),
+                          ],
+                        ),
+                      ),
+                      Icon(Icons.chevron_right, color: Colors.white70),
+                    ],
+                  ),
+                ),
+              ),
+            ),
             // SIM 卡选择
             const ListTile(
               leading: Icon(Icons.sim_card_outlined),
