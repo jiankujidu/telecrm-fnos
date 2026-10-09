@@ -14,6 +14,7 @@ import '../pages/member/member_page.dart';
 import '../pages/follow_up/follow_up_page.dart';
 import '../pages/customer/customer_detail_page.dart';
 import '../pages/customer/customer_edit_page.dart';
+import '../pages/dialer/auto_dial_page.dart';
 import '../providers/auth_provider.dart';
 
 /// 路由配置：登录页 + 底部四大导航
@@ -58,6 +59,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/member',
         builder: (_, __) => const MemberPage(),
+      ),
+      GoRoute(
+        path: '/auto-dial',
+        builder: (_, __) => const AutoDialPage(),
       ),
       GoRoute(
         path: '/follow-up',
