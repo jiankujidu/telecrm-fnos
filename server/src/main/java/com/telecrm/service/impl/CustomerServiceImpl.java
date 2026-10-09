@@ -51,8 +51,24 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
         if (keyword != null && !keyword.isBlank()) {
             w.and(q -> q.like(Customer::getName, keyword).or().like(Customer::getPhone, keyword));
         }
+        // 置顶优先：pinned 降序、置顶时间降序，再按创建时间降序
+        w.orderByDesc(Customer::getPinned);
+        w.orderByDesc(Customer::getPinnedAt);
         w.orderByDesc(Customer::getCreatedAt);
         return page(new Page<>(current, size), w);
+    }
+
+    // ---------- 置顶 / 取消置顶 ----------
+
+    @Override
+    public void togglePin(Long id, boolean pin) {
+        Customer c = getById(id);
+        if (c == null || !c.getTeamId().equals(UserContext.getTeamId())) {
+            throw new BusinessException("客户不存在或无权限");
+        }
+        c.setPinned(pin ? 1 : 0);
+        c.setPinnedAt(pin ? LocalDateTime.now() : null);
+        updateById(c);
     }
 
     // ---------- 新增 / 编辑 / 删除 ----------
