@@ -12,6 +12,7 @@
         <el-menu-item index="/order"><el-icon><List /></el-icon>订单管理</el-menu-item>
         <el-menu-item index="/report"><el-icon><DataLine /></el-icon>报表统计</el-menu-item>
         <el-menu-item index="/profile"><el-icon><Postcard /></el-icon>客户画像</el-menu-item>
+        <el-menu-item index="/dialpush"><el-icon><PhoneFilled /></el-icon>云端自动外呼</el-menu-item>
         <el-menu-item index="/backup"><el-icon><FolderOpened /></el-icon>数据备份</el-menu-item>
       </el-menu>
     </el-aside>
