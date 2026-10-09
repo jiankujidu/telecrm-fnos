@@ -13,6 +13,8 @@ export interface CustomerRow {
   status: string;
   tags: string;
   ownerUserId: number | null;
+  pinned?: number;
+  pinnedAt?: string | null;
 }
 
 /** 客户画像（打电话时整理的客户详细信息） */
@@ -88,6 +90,8 @@ export const customerApi = {
     request.post(`/customer/${id}/profile`, data),
   profiles: (ids: number[]) =>
     request.get('/customer/profiles', { params: { ids: ids.join(',') } }),
+  /** 置顶 / 取消置顶（电脑端与手机端通用） */
+  pin: (id: number, pin: boolean) => request.post(`/customer/${id}/pin`, { pin }),
   /** 画像表：客户 + 画像联表分页 */
   profileList: (scope: CustomerScope, keyword: string, intentLevel: string, current = 1, size = 20) =>
     request.get('/customer/profile/list', {
