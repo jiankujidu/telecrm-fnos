@@ -326,3 +326,7 @@ CREATE TABLE IF NOT EXISTS `vip_code` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_code` (`code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='VIP兑换码表';
+
+-- v1.2.1 客户置顶：电脑端/手机端均可置顶，列表置顶优先排序
+ALTER TABLE `customer` ADD COLUMN `pinned`     TINYINT  NOT NULL DEFAULT 0 COMMENT '是否置顶 0/1';
+ALTER TABLE `customer` ADD COLUMN `pinned_at`  DATETIME DEFAULT NULL COMMENT '置顶时间（用于同级排序）';
