@@ -3,10 +3,21 @@
 飞牛 OS 应用中心的 `.fpk` 安装包 + 完整源码（Java 后端 / Vue3 管理后台 / Flutter 手机 App）。
 装完就是飞牛桌面上的一个正式应用：有图标、能启停、能卸载，数据由飞牛统一托管。
 
-- 应用名：**电销CRM**（`telecrm`）　当前版本：**1.2.0**
-- 镜像：`jiankujidu/telecrm:1.2.0`（Java 后端 + 管理后台合一，单镜像；ARM 机型用 `1.2.0-arm64`）
+- 应用名：**电销CRM**（`telecrm`）　当前版本：**1.2.1**
+- 镜像：`jiankujidu/telecrm:1.2.1`（Java 后端 + 管理后台合一，单镜像；ARM 机型用 `1.2.1-arm64`）
 - 端口：**18080**　后台账号：`13800000001` / `123456`
 - 打包工具：飞牛官方 `fnpack 1.2.3`（手写包结构会被应用中心拒绝，必须用官方工具）
+
+---
+
+## v1.2.1 更新内容：客户置顶（电脑端 / 手机端通用）
+
+- 客户列表新增「**置顶 / 取消置顶**」：置顶的客户在列表里**永远排在最前面**（同级按置顶时间倒序），不受分页与范围影响。
+- **三端统一**：
+  - 电脑后台「客户」页：每行有「置顶 / 取消置顶」按钮，置顶客户带「置顶」橙色标签；
+  - 手机 App「客户」页：每行右侧菜单有「置顶 / 取消置顶」，置顶客户卡片右上角带「置顶」角标；
+  - 后端：统一接口 `POST /api/customer/{id}/pin`（`{pin:true|false}`），列表排序 `pinned DESC, pinned_at DESC, created_at DESC`。
+- 数据备份 / 导入导出自动包含置顶状态（跟随客户表）。
 
 ---
 
@@ -64,11 +75,11 @@ App 退后台或换手机都不会乱序。
 
 | 你的飞牛机型 | 文件 |
 |---|---|
-| 不确定 / 前两个都提示不符 | **[`fpk/telecrm_1.2.0_all.fpk`](fpk/telecrm_1.2.0_all.fpk)**（platform=all，跳过架构校验） |
-| 常见 x86 主机 / x86 NAS | **[`fpk/telecrm_1.2.0_x86.fpk`](fpk/telecrm_1.2.0_x86.fpk)** |
-| ARM 机型（ARM 盒子、瑞芯微/晶晨） | **[`fpk/telecrm_1.2.0_arm.fpk`](fpk/telecrm_1.2.0_arm.fpk)**（arm64 镜像） |
+| 不确定 / 前两个都提示不符 | **[`fpk/telecrm_1.2.1_all.fpk`](fpk/telecrm_1.2.1_all.fpk)**（platform=all，跳过架构校验） |
+| 常见 x86 主机 / x86 NAS | **[`fpk/telecrm_1.2.1_x86.fpk`](fpk/telecrm_1.2.1_x86.fpk)** |
+| ARM 机型（ARM 盒子、瑞芯微/晶晨） | **[`fpk/telecrm_1.2.1_arm.fpk`](fpk/telecrm_1.2.1_arm.fpk)**（arm64 镜像） |
 
-手机 App：**[`apk/TeleCRM-v1.2.0.apk`](apk/TeleCRM-v1.2.0.apk)**（需登录版，23.5 MB）
+手机 App：**[`apk/TeleCRM-v1.2.1.apk`](apk/TeleCRM-v1.2.1.apk)**（需登录版，23.5 MB）
 
 查机型：飞牛桌面 → 系统设置 → 关于/设备信息看处理器；或 SSH 执行 `uname -m`，
 `x86_64` 选 x86 包，`aarch64` 选 arm 包。
@@ -96,7 +107,7 @@ http://飞牛IP:18080/api
 
 ## 四、核心功能
 
-### 云端自动外呼（v1.2.0 新增）
+### 云端自动外呼（v1.2.1 新增）
 
 后台左侧菜单 **云端自动外呼** = 电脑端控制台：
 
@@ -201,7 +212,7 @@ cd app && flutter pub get && flutter run
 
 # 一体化镜像（先打 jar，再构建镜像）
 cd server && mvn package -DskipTests && cp target/*.jar ../deploy/app.jar
-cd ../deploy && docker build -f Dockerfile.runtime -t jiankujidu/telecrm:1.2.0 .
+cd ../deploy && docker build -f Dockerfile.runtime -t jiankujidu/telecrm:1.2.1 .
 
 # 飞牛包（需要 fnpack）
 cd fnos && ./build-fpk.sh
