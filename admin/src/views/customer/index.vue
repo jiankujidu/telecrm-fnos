@@ -18,7 +18,12 @@
 
     <el-table :data="customers" border v-loading="loading" @selection-change="onSelect">
       <el-table-column type="selection" width="50" />
-      <el-table-column prop="name" label="姓名" />
+      <el-table-column prop="name" label="姓名">
+        <template #default="{ row }">
+          <span>{{ row.name }}</span>
+          <el-tag v-if="row.pinned" type="warning" size="small" effect="dark" style="margin-left: 6px">置顶</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column prop="phone" label="电话" />
       <el-table-column prop="company" label="公司" />
       <el-table-column prop="tags" label="标签" />
@@ -38,6 +43,9 @@
           <el-button link type="primary" @click="onDetail(row)">详情</el-button>
           <el-button link type="primary" @click="onEdit(row)">编辑</el-button>
           <el-button link type="success" @click="onProfile(row)">画像</el-button>
+          <el-button link :type="row.pinned ? 'info' : 'warning'" @click="onPin(row)">
+            {{ row.pinned ? '取消置顶' : '置顶' }}
+          </el-button>
           <el-button link type="primary" @click="onTransfer(row)">转让</el-button>
           <el-button link type="danger" @click="onDelete(row)">删除</el-button>
         </template>
@@ -330,6 +338,20 @@ async function confirmPick() {
 function onTransfer(row: CustomerRow) {
   selected.value = [row];
   openPick('transfer');
+}
+
+// ---------- 置顶 / 取消置顶 ----------
+async function onPin(row: CustomerRow) {
+  const pin = !row.pinned;
+  try {
+    await customerApi.pin(row.id, pin);
+    row.pinned = pin ? 1 : 0;
+    row.pinnedAt = pin ? new Date().toISOString() : null;
+    ElMessage.success(pin ? '已置顶' : '已取消置顶');
+    await reload();
+  } catch (e: any) {
+    ElMessage.error(e?.message || '操作失败');
+  }
 }
 
 async function onAssign() {
