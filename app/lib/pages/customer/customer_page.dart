@@ -145,7 +145,20 @@ class _CustomerListTabState extends State<_CustomerListTab>
                       style: TextStyle(color: green),
                     ),
                   ),
-                  title: Text(c.name ?? '未知客户'),
+                  title: Row(
+                    children: [
+                      Expanded(child: Text(c.name ?? '未知客户')),
+                      if (c.pinned)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: Colors.orange,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Text('置顶', style: TextStyle(color: Colors.white, fontSize: 11)),
+                        ),
+                    ],
+                  ),
                   subtitle: Text(subtitle),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -171,14 +184,20 @@ class _CustomerListTabState extends State<_CustomerListTab>
                           } else if (v == 'edit') {
                             final ok = await context.push<bool>('/customer/${c.id}/edit');
                             if (ok == true) _refresh();
+                          } else if (v == 'pin') {
+                            await _togglePin(c);
                           } else if (v == 'delete') {
                             await _confirmDelete(c);
                           }
                         },
-                        itemBuilder: (_) => const [
-                          PopupMenuItem(value: 'detail', child: Text('详情')),
-                          PopupMenuItem(value: 'edit', child: Text('编辑画像')),
-                          PopupMenuItem(value: 'delete', child: Text('删除')),
+                        itemBuilder: (_) => [
+                          const PopupMenuItem(value: 'detail', child: Text('详情')),
+                          const PopupMenuItem(value: 'edit', child: Text('编辑画像')),
+                          PopupMenuItem(
+                            value: 'pin',
+                            child: Text(c.pinned ? '取消置顶' : '置顶'),
+                          ),
+                          const PopupMenuItem(value: 'delete', child: Text('删除')),
                         ],
                       ),
                     ],
@@ -195,6 +214,17 @@ class _CustomerListTabState extends State<_CustomerListTab>
 
   void _toast(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  Future<void> _togglePin(Customer c) async {
+    try {
+      final pin = !c.pinned;
+      await CustomerApi.pin(int.parse(c.id), pin);
+      _toast(pin ? '已置顶' : '已取消置顶');
+      await _refresh();
+    } catch (e) {
+      _toast('操作失败：$e');
+    }
   }
 
   Future<void> _confirmDelete(Customer c) async {
