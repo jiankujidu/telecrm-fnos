@@ -1,0 +1,1 @@
+import{r as m}from"./request-D4AlQGSC.js";const s={list:()=>m.get("/team/members"),add:(e,t,r="member")=>m.post("/team/member",{phone:e,nickname:t,role:r}),remove:e=>m.delete(`/team/member/${e}`)};export{s as t};
