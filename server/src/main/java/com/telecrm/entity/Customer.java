@@ -7,6 +7,8 @@ import com.telecrm.common.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.time.LocalDateTime;
+
 /**
  * 客户表（支持自定义字段JSON）
  */
@@ -44,4 +46,10 @@ public class Customer extends BaseEntity {
 
     /** 标签，逗号分隔 */
     private String tags;
+
+    /** 是否置顶 0/1（电脑端/手机端均可置顶，列表优先展示） */
+    private Integer pinned;
+
+    /** 置顶时间，用于同级排序 */
+    private LocalDateTime pinnedAt;
 }
