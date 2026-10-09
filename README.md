@@ -3,10 +3,48 @@
 飞牛 OS 应用中心的 `.fpk` 安装包 + 完整源码（Java 后端 / Vue3 管理后台 / Flutter 手机 App）。
 装完就是飞牛桌面上的一个正式应用：有图标、能启停、能卸载，数据由飞牛统一托管。
 
-- 应用名：**电销CRM**（`telecrm`）　当前版本：**1.1.0**
-- 镜像：`jiankujidu/telecrm:1.1.0`（Java 后端 + 管理后台合一，单镜像；ARM 机型用 `1.1.0-arm64`）
+- 应用名：**电销CRM**（`telecrm`）　当前版本：**1.2.0**
+- 镜像：`jiankujidu/telecrm:1.2.0`（Java 后端 + 管理后台合一，单镜像；ARM 机型用 `1.2.0-arm64`）
 - 端口：**18080**　后台账号：`13800000001` / `123456`
 - 打包工具：飞牛官方 `fnpack 1.2.3`（手写包结构会被应用中心拒绝，必须用官方工具）
+
+---
+
+## v1.2.0 更新内容：云端自动外呼（重点）
+
+**要的效果**：电脑上点一下，手机自动按顺序一通一通拨出去；可以指定「从哪个客户开始」、
+「每通之间隔多少秒」，还能随时暂停 / 跳过 / 结束。
+
+**架构（电脑当大脑，手机当执行器）**
+
+```
+电脑端后台 ──建任务(起点客户/条数/间隔秒数)──▶ 服务器 dial_push_task
+                                                    │
+手机 App ◀──每 2 秒问一次 /dial-push/next ──────────┤  后端按 seq 顺序 + 间隔秒数发号
+    │                                                │  原子领取，多手机不会重复拨
+    ├─ 自动拨出（有权限直拨，无权限唤起拨号界面）
+    └─ 挂断后点结果 → /report → 后端推进下一条（并同步写一条通话记录）
+```
+
+**为什么这么设计**：顺序、间隔、暂停全部由后端决定，手机每轮都来问一次，
+所以电脑上一改，手机**下一轮（≤2 秒）立刻生效**；手机端只做「拨号 + 报结果」两件事，
+App 退后台或换手机都不会乱序。
+
+| 能力 | 说明 |
+|---|---|
+| 选择起点 | 后台新建任务时可搜索客户，「从这一条开始」按顺序往后拨 |
+| 间隔秒数 | 0~600 秒可设；上一通拨出后由**服务端**计时，手机端只做倒计时显示 |
+| 暂停 / 继续 / 结束 | 电脑端一键控制，手机下一轮立即响应 |
+| 跳过当前 | 电脑端点「跳过当前」，或手机端点「重拨/放回」 |
+| 结果标记 | 已接通 / 已加客户 / 未接听 / 拒接 / 关机 / 空号；不点则倒计时结束按默认结果自动进下一条 |
+| 结果留痕 | 每条自动镜像写入通话记录，报表里照样统计 |
+| 指定手机 | 可指定由哪台手机执行；不指定则任意手机都能接单 |
+
+**用法（3 步）**
+
+1. 电脑端：管理后台 → **云端自动外呼** → 新建任务（选范围 / 起点客户 / 条数 / 间隔秒数）→ **创建并立即开始**
+2. 手机端：App 首页点 **云端自动外呼**（或「自动拨号」页），**保持页面在前台**，就会自动按顺序拨出
+3. 每通挂断后点一下结果；不点则在倒计时结束后自动进入下一条（默认标记「未接听」，可在右上角设置里改）
 
 ---
 
@@ -26,11 +64,11 @@
 
 | 你的飞牛机型 | 文件 |
 |---|---|
-| 不确定 / 前两个都提示不符 | **[`fpk/telecrm_1.1.0_all.fpk`](fpk/telecrm_1.1.0_all.fpk)**（platform=all，跳过架构校验） |
-| 常见 x86 主机 / x86 NAS | **[`fpk/telecrm_1.1.0_x86.fpk`](fpk/telecrm_1.1.0_x86.fpk)** |
-| ARM 机型（ARM 盒子、瑞芯微/晶晨） | **[`fpk/telecrm_1.1.0_arm.fpk`](fpk/telecrm_1.1.0_arm.fpk)**（arm64 镜像） |
+| 不确定 / 前两个都提示不符 | **[`fpk/telecrm_1.2.0_all.fpk`](fpk/telecrm_1.2.0_all.fpk)**（platform=all，跳过架构校验） |
+| 常见 x86 主机 / x86 NAS | **[`fpk/telecrm_1.2.0_x86.fpk`](fpk/telecrm_1.2.0_x86.fpk)** |
+| ARM 机型（ARM 盒子、瑞芯微/晶晨） | **[`fpk/telecrm_1.2.0_arm.fpk`](fpk/telecrm_1.2.0_arm.fpk)**（arm64 镜像） |
 
-手机 App：**[`apk/TeleCRM-v1.1.0.apk`](apk/TeleCRM-v1.1.0.apk)**（需登录版，23.5 MB）
+手机 App：**[`apk/TeleCRM-v1.2.0.apk`](apk/TeleCRM-v1.2.0.apk)**（需登录版，23.5 MB）
 
 查机型：飞牛桌面 → 系统设置 → 关于/设备信息看处理器；或 SSH 执行 `uname -m`，
 `x86_64` 选 x86 包，`aarch64` 选 arm 包。
@@ -57,6 +95,19 @@ http://飞牛IP:18080/api
 填完点右侧信号图标「**测试连接**」→ 显示「连接成功」→ 再输入账号密码登录。
 
 ## 四、核心功能
+
+### 云端自动外呼（v1.2.0 新增）
+
+后台左侧菜单 **云端自动外呼** = 电脑端控制台：
+
+- **新建任务**：任务名称、客户范围（我的/团队/公海）、关键词过滤、**从哪个客户开始**（可搜索）、
+  拨打条数（≤2000）、**间隔秒数**、指定哪台手机执行
+- **实时进度卡**：已拨打/总数、接通数、当前正在拨的号码与第几条、进度条
+- **控制**：开始 / 暂停 / 继续 / 结束 / 取消 / 跳过当前 / 查看明细
+- **明细抽屉**：每条的序号、姓名、电话、状态、结果、时长、备注，可单独跳过
+- 默认 2 秒自动刷新；手机端结果一上报，这里立刻变
+
+手机端 App：**首页 → 云端自动外呼**（绿色横幅入口）
 
 ### 客户画像（新增）
 
@@ -150,7 +201,7 @@ cd app && flutter pub get && flutter run
 
 # 一体化镜像（先打 jar，再构建镜像）
 cd server && mvn package -DskipTests && cp target/*.jar ../deploy/app.jar
-cd ../deploy && docker build -f Dockerfile.runtime -t jiankujidu/telecrm:1.1.0 .
+cd ../deploy && docker build -f Dockerfile.runtime -t jiankujidu/telecrm:1.2.0 .
 
 # 飞牛包（需要 fnpack）
 cd fnos && ./build-fpk.sh
@@ -170,3 +221,22 @@ cd fnos && ./build-fpk.sh
 | GET | `/api/backup/export` | 导出全库备份 JSON |
 | POST | `/api/backup/preview` | 预览备份文件内容 |
 | POST | `/api/backup/import?mode=` | 恢复（overwrite / append） |
+
+### 云端自动外呼 `/api/dial-push`
+
+| 方法 | 路径 | 谁调用 | 说明 |
+|---|---|---|---|
+| POST | `/api/dial-push/create` | 电脑 | 建任务（scope / keyword / startCustomerId / limit / intervalSeconds / targetUserId / name） |
+| GET | `/api/dial-push/list` | 电脑 | 任务列表 |
+| GET | `/api/dial-push/{id}` | 电脑 | 任务详情 |
+| GET | `/api/dial-push/{id}/progress` | 电脑 | 实时进度（总/已拨/接通/当前号码） |
+| GET | `/api/dial-push/{id}/items` | 电脑 | 任务明细 |
+| POST | `/api/dial-push/{id}/control` | 电脑 | `start` / `pause` / `resume` / `stop` / `cancel` |
+| POST | `/api/dial-push/{id}/skip` | 电脑 | 跳过某一条 |
+| DELETE | `/api/dial-push/{id}` | 电脑 | 删除任务 |
+| **GET** | **`/api/dial-push/next`** | **手机** | 轮询取号：`none` / `paused` / `wait` / `dial` / `finished` |
+| **POST** | **`/api/dial-push/report`** | **手机** | 上报结果（connected / no_answer / refused / shutdown / empty / add_customer） |
+| POST | `/api/dial-push/release` | 手机 | 放弃当前，退回队列 |
+
+> 取号用 `UPDATE ... WHERE id = (SELECT id FROM (... ORDER BY seq LIMIT 1) x)` 原子领取，
+> 多台手机同时接单也不会重复拨同一个号。
