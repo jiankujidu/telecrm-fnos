@@ -19,6 +19,7 @@ const router = createRouter({
         { path: 'order', name: 'Order', component: () => import('@/views/order/index.vue'), meta: { title: '订单管理' } },
         { path: 'report', name: 'Report', component: () => import('@/views/report/index.vue'), meta: { title: '报表统计' } },
         { path: 'profile', name: 'Profile', component: () => import('@/views/profile/index.vue'), meta: { title: '客户画像' } },
+        { path: 'dialpush', name: 'DialPush', component: () => import('@/views/dialpush/index.vue'), meta: { title: '云端自动外呼' } },
         { path: 'backup', name: 'Backup', component: () => import('@/views/backup/index.vue'), meta: { title: '数据备份与恢复' } },
       ],
     },
