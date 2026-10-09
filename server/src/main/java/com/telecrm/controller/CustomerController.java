@@ -76,6 +76,13 @@ public class CustomerController {
         return Result.success(r);
     }
 
+    @PostMapping("/{id}/pin")
+    public Result<Map<String, Object>> pin(@PathVariable Long id, @RequestBody Map<String, Boolean> body) {
+        boolean pin = body.getOrDefault("pin", true);
+        customerService.togglePin(id, pin);
+        return Result.success(Map.of("pinned", pin ? 1 : 0));
+    }
+
     @PostMapping("/transfer")
     public Result<Void> transfer(@RequestBody Map<String, Long> body) {
         customerService.transfer(body.get("customerId"), body.get("toUserId"), UserContext.getUserId());
