@@ -199,6 +199,58 @@ CREATE TABLE IF NOT EXISTS `call_record` (
   KEY `idx_called_at` (`called_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='通话记录表';
 
+-- 云端自动外呼任务（电脑端下发，手机端执行）
+CREATE TABLE IF NOT EXISTS `dial_push_task` (
+  `id`               BIGINT       NOT NULL AUTO_INCREMENT,
+  `team_id`          BIGINT       NOT NULL,
+  `user_id`          BIGINT       NOT NULL COMMENT '创建人（电脑端坐席）',
+  `target_user_id`   BIGINT       DEFAULT NULL COMMENT '指定由哪台手机执行（null=任意空闲手机）',
+  `name`             VARCHAR(100) DEFAULT '' COMMENT '任务名称',
+  `scope`            VARCHAR(20)  DEFAULT 'mine' COMMENT '客户范围 mine/team/public',
+  `keyword`          VARCHAR(100) DEFAULT '' COMMENT '创建时的筛选关键词',
+  `start_customer_id` BIGINT      DEFAULT NULL COMMENT '从哪个客户开始拨打',
+  `interval_seconds` INT          DEFAULT 15 COMMENT '两通之间间隔秒数（0=不等待）',
+  `status`           VARCHAR(20)  DEFAULT 'pending' COMMENT 'pending/running/paused/finished/cancelled',
+  `total_count`      INT          DEFAULT 0,
+  `dialed_count`     INT          DEFAULT 0,
+  `connected_count`  INT          DEFAULT 0,
+  `current_item_id`  BIGINT       DEFAULT NULL COMMENT '当前正在拨打的明细ID',
+  `last_dialed_at`   DATETIME     DEFAULT NULL COMMENT '上一通拨出时间（后端据此控制间隔）',
+  `started_at`       DATETIME     DEFAULT NULL,
+  `finished_at`      DATETIME     DEFAULT NULL,
+  `created_at`       DATETIME     DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`       DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted`          TINYINT      DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `idx_team` (`team_id`),
+  KEY `idx_status` (`status`),
+  KEY `idx_target` (`target_user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='云端自动外呼任务表';
+
+-- 云端自动外呼明细（按 seq 顺序拨打）
+CREATE TABLE IF NOT EXISTS `dial_push_item` (
+  `id`          BIGINT       NOT NULL AUTO_INCREMENT,
+  `task_id`     BIGINT       NOT NULL,
+  `seq`         INT          DEFAULT 0 COMMENT '拨打顺序',
+  `customer_id` BIGINT       DEFAULT NULL,
+  `name`        VARCHAR(50)  DEFAULT '',
+  `phone`       VARCHAR(20)  NOT NULL COMMENT '拨打号码',
+  `company`     VARCHAR(100) DEFAULT '',
+  `status`      VARCHAR(20)  DEFAULT 'pending' COMMENT 'pending/dialing/dialed/skipped/failed',
+  `result`      VARCHAR(20)  DEFAULT '' COMMENT 'connected/not_answered/empty/add_customer',
+  `duration`    INT          DEFAULT 0 COMMENT '通话时长(秒)',
+  `remark`      VARCHAR(500) DEFAULT '' COMMENT '标记备注',
+  `executor_id` BIGINT       DEFAULT NULL COMMENT '执行的手机用户ID',
+  `started_at`  DATETIME     DEFAULT NULL,
+  `finished_at` DATETIME     DEFAULT NULL,
+  `created_at`  DATETIME     DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`  DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted`     TINYINT      DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `idx_task` (`task_id`),
+  KEY `idx_task_status` (`task_id`, `status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='云端自动外呼明细表';
+
 -- 业务模板表
 CREATE TABLE IF NOT EXISTS `business_template` (
   `id`          BIGINT   NOT NULL AUTO_INCREMENT,
