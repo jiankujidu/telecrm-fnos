@@ -7,6 +7,7 @@ class Customer {
   final String? address;
   final String? remark;
   final String? tags;
+  final bool pinned;
 
   const Customer({
     required this.id,
@@ -16,6 +17,7 @@ class Customer {
     this.address,
     this.remark,
     this.tags,
+    this.pinned = false,
   });
 
   factory Customer.fromJson(Map<String, dynamic> json) => Customer(
@@ -26,5 +28,17 @@ class Customer {
         address: json['address'],
         remark: json['remark'],
         tags: json['tags'],
+        pinned: json['pinned'] == 1 || json['pinned'] == true,
+      );
+
+  Customer copyWith({bool? pinned}) => Customer(
+        id: id,
+        name: name,
+        phone: phone,
+        company: company,
+        address: address,
+        remark: remark,
+        tags: tags,
+        pinned: pinned ?? this.pinned,
       );
 }
