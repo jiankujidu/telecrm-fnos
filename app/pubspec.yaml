@@ -1,7 +1,7 @@
 name: tele_sales_crm
 description: 电销CRM移动端 - 复刻电销帮
 publish_to: 'none'
-version: 1.1.0+2
+version: 1.2.0+3
 
 environment:
   sdk: ^3.4.0
